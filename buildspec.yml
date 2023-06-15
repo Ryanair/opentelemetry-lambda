@@ -3,7 +3,7 @@ version: 0.2
 phases:
   install:
     runtime-versions:
-      golang: 1.18
+      golang: 1.20
 
   build:
     commands:
@@ -14,8 +14,8 @@ phases:
   post_build:
     commands:
       - >
-        if [[ -v REGIONS ]]; then IFS=',' read -ra regions <<< "$REGIONS"; for region in "${regions[@]}"; do 
-          aws lambda publish-layer-version --layer-name $LAYER_NAME --zip-file fileb://build/collector-extension.zip --compatible-architectures $COMPATIBLE_ARCHITECTURE --region $region --compatible-runtimes nodejs14.x nodejs16.x nodejs18.x java11 python3.8 python3.9 --query 'LayerVersionArn' --output text; 
+        if [[ -v REGIONS ]]; then IFS=',' read -ra regions <<< "$REGIONS"; for region in "${regions[@]}"; do
+          aws lambda publish-layer-version --layer-name $LAYER_NAME --zip-file fileb://build/opentelemetry-collector-layer-$GOARCH.zip --compatible-architectures $COMPATIBLE_ARCHITECTURE --region $region --compatible-runtimes nodejs14.x nodejs16.x nodejs18.x java11 python3.8 python3.9 --query 'LayerVersionArn' --output text;
           if [[ -v SHARE_WITH_PRINCIPALS ]]; then IFS=',' read -ra items <<< "$SHARE_WITH_PRINCIPALS"; for item in "${items[@]}"; do 
             aws lambda add-layer-version-permission --layer-name $LAYER_NAME --region $region --version-number $(aws lambda list-layer-versions --layer-name $LAYER_NAME --region $region --query 'LayerVersions[0].Version') --statement-id sharingWith$item --principal $item --action lambda:GetLayerVersion; 
           done; fi
